@@ -71,7 +71,7 @@ const WebcamFeed: React.FC<WebcamFeedProps> = ({
   }, [isRecording]);
 
   useEffect(() => {
-    let timeoutId: number;
+    let timeoutId: number = 0; // Initialize to 0
     let isMounted = true;
 
     const pollDetection = async () => {
@@ -86,65 +86,65 @@ const WebcamFeed: React.FC<WebcamFeedProps> = ({
       ctx.drawImage(videoRef.current, 0, 0, 1280, 720);
 
       canvasRef.current.toBlob(async (blob) => {
-  if (!blob) {
-    timeoutId = window.setTimeout(pollDetection, 4000);
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("frame", blob);
-
-  try {
-    const res = await fetch("http://localhost:5174/api/analyze", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (isMounted && Array.isArray(data.results)) {
-      setDetections(data.results);
-
-      // Notify parent modal of newly detected names
-      data.results.forEach((det: DetectionResult) => {
-        if (det.name) {
-          onStudentDetected(det.name);
+        if (!blob) {
+          timeoutId = window.setTimeout(pollDetection, 4000);
+          return;
         }
-      });
 
-      const formattedAttendance = data.results.map((det: DetectionResult) => ({
-        studentName: det.name,
-        subject: subjectId,
-        subjectName,
-        faculty: facultyId,
-        facultyName,
-        date: new Date(),
-        status: "present",
-        division,
-        department,
-        semester,
-      }));
+        const formData = new FormData();
+        formData.append("frame", blob);
 
-      const attendanceBody = formattedAttendance;
+        try {
+          const res = await fetch("http://localhost:5174/api/analyze", {
+            method: "POST",
+            body: formData,
+          });
 
-      console.log("Sending attendance payload:", JSON.stringify(attendanceBody, null, 2));
+          const data = await res.json();
+          if (isMounted && Array.isArray(data.results)) {
+            setDetections(data.results);
 
-      await fetch("http://localhost:5000/api/attendance/mark", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(attendanceBody),
-      });
-    }
-  } catch (err) {
-    console.error("Error processing detection:", err);
-  }
+            // Notify parent modal of newly detected names
+            data.results.forEach((det: DetectionResult) => {
+              if (det.name) {
+                onStudentDetected(det.name);
+              }
+            });
 
-  if (isMounted) {
-    timeoutId = window.setTimeout(pollDetection, 4000);
-  }
-}, "image/jpeg", 0.8); // Added quality parameter (0.8) and fixed syntax
+            const formattedAttendance = data.results.map((det: DetectionResult) => ({
+              studentName: det.name,
+              subject: subjectId,
+              subjectName,
+              faculty: facultyId,
+              facultyName,
+              date: new Date(),
+              status: "present",
+              division,
+              department,
+              semester,
+            }));
+
+            const attendanceBody = formattedAttendance;
+
+            console.log("Sending attendance payload:", JSON.stringify(attendanceBody, null, 2));
+
+            await fetch("http://localhost:5000/api/attendance/mark", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(attendanceBody),
+            });
+          }
+        } catch (err) {
+          console.error("Error processing detection:", err);
+        }
+
+        if (isMounted) {
+          timeoutId = window.setTimeout(pollDetection, 4000);
+        }
+      }, "image/jpeg", 0.8);
     };
 
     if (isRecording) pollDetection();
@@ -153,7 +153,7 @@ const WebcamFeed: React.FC<WebcamFeedProps> = ({
       isMounted = false;
       clearTimeout(timeoutId);
     };
-  }, [isRecording]);
+  }, [isRecording, facultyId, facultyName, subjectId, subjectName, division, department, semester, onStudentDetected]);
 
   const startCamera = async () => {
     try {

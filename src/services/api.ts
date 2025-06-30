@@ -1,6 +1,7 @@
 import axios from "axios";
+import config from "../config/environment";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = config.API_URL;
 
 // Create axios instance with default config
 const api = axios.create({
@@ -56,8 +57,7 @@ export const usersAPI = {
   deleteUser: (userId) => api.delete(`/users/${userId}`),
 };
 
-//students API
-// services/api.ts or a separate studentsAPI.ts
+// Students API
 export const studentsAPI = {
   getAll: (params) => api.get("/students", { params }),
   create: (data) => api.post("/students", data),
@@ -93,11 +93,5 @@ export const attendanceAPI = {
   getAttendanceReport: (params) => api.get("/attendance/report", { params }),
   getSessions: (params) => api.get("/attendance/sessions", { params }),
 };
-
-// foldar banao naam se automatic, folder ke andar wohi fucking naam se save honi chaiye
-
-//recognition
-
-//mongodb save(upload)
 
 export default api;
