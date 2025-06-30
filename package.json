@@ -6,7 +6,7 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "eslint.config.js",
+  "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "vite",
