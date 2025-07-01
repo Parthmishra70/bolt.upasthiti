@@ -5,21 +5,14 @@ import { Users, GraduationCap, UserCog, BookOpen } from 'lucide-react';
 
 async function getStats() {
   try {
-    const [usersRes, studentsRes, facultyRes, subjectsRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats/users`, { cache: 'no-store' }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats/students`, { cache: 'no-store' }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats/faculty`, { cache: 'no-store' }),
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/stats/subjects`, { cache: 'no-store' })
-    ]);
-
-    const [users, students, faculty, subjects] = await Promise.all([
-      usersRes.json(),
-      studentsRes.json(),
-      facultyRes.json(),
-      subjectsRes.json()
-    ]);
-
-    return { users, students, faculty, subjects };
+    const res = await fetch("/api/admin/stats", { cache: 'no-store' });
+    const data = await res.json();
+    return {
+      users: { total: data.users?.total || 0 },
+      students: { total: data.students?.total || 0 },
+      faculty: { total: data.faculty?.total || 0 },
+      subjects: { total: data.subjects?.total || 0 }
+    };
   } catch (error) {
     console.error('Error fetching stats:', error);
     return {
