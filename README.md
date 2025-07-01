@@ -125,7 +125,7 @@ Setup Backend
 cd server
 npm install
 # Create .env with MongoDB URI and JWT secret
-npm run dev
+ npm run dev
 
 Setup Frontend
 cd client
